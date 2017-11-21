@@ -6,7 +6,7 @@ require(doParallel)
 #datos <- read.csv(paste0(root,"\\G4_001.csv"))
 
 #root <- "/Volumes/HDD/Google Drive/2017 - 2/Miner??a de Datos Avanzada/V.- Support Vector Regression y Recurrencia Externa/"
-datos <- read.csv("G5_001.csv")
+datos <- read.csv("G5_002.csv")
 
 
 
@@ -40,7 +40,7 @@ data.train <- data.normalized[1:train.index,]
 data.test <- data.normalized[train.index:(nrow(data.normalized)-1),]
 
 
-for(l in 1:8){
+for(l in 3:8){
 
 retDatos.train <- retrasos(data.train, l)
 x.train=subset(retDatos.train, select = -VFSC)
