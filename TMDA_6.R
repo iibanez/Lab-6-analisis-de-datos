@@ -90,3 +90,40 @@ colnames(mejoresModelos) <- c("Lags","Costos","NU","gamma","Correlaci??n")
 write.csv(mejoresModelos, file = paste0("Mejores Modelos L=",l," BA.csv"),row.names = FALSE,sep = ";",dec =",")
 
 }
+
+mejoresModelos <- read.csv("Mejores Modelos L=6 AB_002.csv")[1:2,]
+
+#output <- matrix(unlist(salida), ncol = 5, byrow = TRUE)
+#mejoresModelos<-output[order(output[,5], decreasing = TRUE),]
+
+inverseStep=matrix(1,180/Ts,1)
+inverseStep[(90/Ts):(180/Ts),1]=0
+
+for (i in 1:length(mejoresModelos[,1])){
+  lag<-list(PAMn = mejoresModelos[i,1],VFSCn = 0)
+  
+  retDatos.train <- retrasos(data.train, lag$PAMn)
+  x.train=subset(retDatos.train, select = -VFSC)
+  y.train=retDatos.train$VFSC
+  
+  retDatos.test <- retrasos(data.test, lag$PAMn)
+  x.test=subset(retDatos.test, select = -VFSC)
+  y.test=retDatos.test$VFSC
+  
+  mejorModelo <- svm(x.train, y.train, kernel = "radial",type = "nu-regression", cost = mejoresModelos[i,2], nu = mejoresModelos[i,3], gamma=mejoresModelos[i,4])
+  PAMn=inverseStep
+  VFSCn=inverseStep
+  data <- data.frame(PAMn,VFSCn)
+  
+  lag<-list(PAMn = mejoresModelos[i,1],VFSCn = 0)
+  retDatos <- retrasos(data, lag$PAMn) 
+  x=subset(retDatos, select = -VFSCn) 
+  y=retDatos$VFSCn 
+  stepTime=seq(Ts,(length(retDatos$PAM))*Ts,Ts)
+  stepResponse <- predict(mejorModelo, x )
+  plot(stepTime,retDatos$PAM,type="l", col="red") 
+  lines(stepTime,stepResponse, col = "blue")
+  legend("topright", c("Escalon de presi??n", "respuesta al escalon"), title = "autorregulacion", pch = 1, col=c("red","blue"),lty=c(1,1),inset = 0.01)
+  print(paste("corr=",mejoresModelos[5]))
+  readline(prompt="Press [enter] to continue")
+}
